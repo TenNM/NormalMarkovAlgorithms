@@ -46,20 +46,13 @@ namespace NormalMarkovAlgorithms
             _rules.Add(new OneRule(find, replaceWith, finishRule));
             return true;
         }
-        /*internal static bool AddRule(string find, string replaceWith)
-        {
-            if (null == find || null == replaceWith) return false;
-            _rules.Add(new OneRule(find, replaceWith));
-            return true;
-        }*/
         internal static bool DeleteRule(string find, string replaceWith)
         {
             int iDeleted = _rules.RemoveAll(
                 r => r._find.Equals(find) &&
                 r._replaceWith.Equals(replaceWith)
                 );
-            if (iDeleted > 0) return true;
-            return false;
+            return iDeleted > 0;
         }
         internal static bool DeleteRule(int index)
         {
