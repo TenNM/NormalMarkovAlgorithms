@@ -5,11 +5,11 @@ namespace NormalMarkovAlgorithms
 {
     static class NormalMarkovAlgorithms
     {
-        private static int _iterLimit = 100;
+        private static int iterLimit = 100;
         internal static int IterLimit
         {
-            set { if (value > 0 && value < int.MaxValue) _iterLimit = value; }
-            get { return _iterLimit; }
+            set { if (value > 0 && value < int.MaxValue) iterLimit = value; }
+            get { return iterLimit; }
         }
         //--------------------------------------------
         private static int iterationsSystem = 0;
@@ -17,100 +17,109 @@ namespace NormalMarkovAlgorithms
         //-------------------------------------------
         internal static bool IsStepByStep = false;
         //----------------------------------------------------
-        private static string _baseStr;
+        private static string baseStr;
         internal static string BaseStr
         {
-            set { if (value != null) _baseStr = value; }
-            get { return _baseStr; }
+            set { if (value != null) baseStr = value; }
+            get { return baseStr; }
         }
         //-----
-        private static string _resStr;
+        private static string resStr;
         internal static string ResStr
         {
-            get { return _resStr; }
+            get { return resStr; }
         }
         //------------------------------------------------------
-        private static int _ruleIdx;
+        private static int ruleIdx;
         internal static int RuleIndex
         {
-            get { return _ruleIdx; }
+            get { return ruleIdx; }
         }
-        private static List<OneRule> _rules = new List<OneRule>();
+        private static List<OneRule> rules = new List<OneRule>();
         internal static List<OneRule> Rules
         {
-            get { return _rules; }
+            get { return rules; }
         }
         internal static bool AddRule(string find, string replaceWith, bool finishRule = false)
         {
             if (null == find || null == replaceWith) return false;
-            _rules.Add(new OneRule(find, replaceWith, finishRule));
+            rules.Add(new OneRule(find, replaceWith, finishRule));
             return true;
         }
         internal static bool DeleteRule(string find, string replaceWith)
         {
-            int iDeleted = _rules.RemoveAll(
-                r => r._find.Equals(find) &&
-                r._replaceWith.Equals(replaceWith)
+            int iDeleted = rules.RemoveAll(
+                r => r.find.Equals(find) &&
+                r.replaceWith.Equals(replaceWith)
                 );
             return iDeleted > 0;
         }
         internal static bool DeleteRule(int index)
         {
-            if (index > 0 && index < _rules.Count - 1)
+            if (index > 0 && index < rules.Count - 1)
             {
-                _rules.RemoveAt(index);
+                rules.RemoveAt(index);
+                return true;
+            }
+            return false;
+        }
+        internal static bool DeleteAllRules()
+        {
+            if(rules.Count > 0)
+            {
+                rules.Clear();
                 return true;
             }
             return false;
         }
         internal static void MoveRules(int ruleIndex, int moveSide)//+-1
         {
-            if (ruleIndex < 0 && ruleIndex > _rules.Count - 1) return;//out of bounds
+            if (ruleIndex < 0 && ruleIndex > rules.Count - 1) return;//out of bounds
             if (0 == ruleIndex && moveSide < 0) return; // cant dec 0 pos
-            if (_rules.Count - 1 == ruleIndex && moveSide > 0) return; // cant inc max pos
-            if (ruleIndex + moveSide < 0 || ruleIndex + moveSide > _rules.Count - 1) return;// out of bounds shift
+            if (rules.Count - 1 == ruleIndex && moveSide > 0) return; // cant inc max pos
+            if (ruleIndex + moveSide < 0 || ruleIndex + moveSide > rules.Count - 1) return;// out of bounds shift
             if (moveSide != 1 && moveSide != -1) return;// bad moveSide arg
 
-            OneRule or = _rules[ruleIndex];
-            _rules[ruleIndex] = _rules[ruleIndex + moveSide];
-            _rules[ruleIndex + moveSide] = or;
+            OneRule or = rules[ruleIndex];
+            rules[ruleIndex] = rules[ruleIndex + moveSide];
+            rules[ruleIndex + moveSide] = or;
         }
         //-------------------------------------------------------------
         internal static void Start()
         {
-            bool swapProc = false;
+            bool needSwap = false;
             iterationsSystem = 0;
             iterationsMarkov = 0;
-            _resStr = _baseStr;
-            Console.WriteLine("\n{0, -5}{1, -5}", iterationsMarkov, _resStr);
+            resStr = baseStr;
+            Console.WriteLine("\n{0, -5}{1, -5}", iterationsMarkov, resStr);
 
-            for (_ruleIdx = 0; _ruleIdx < _rules.Count && iterationsSystem < _iterLimit; iterationsSystem++)
+            for (ruleIdx = 0; ruleIdx < rules.Count && iterationsSystem < iterLimit; iterationsSystem++)
             {
-                if (_rules[_ruleIdx]._find.Equals(""))
+                if (rules[ruleIdx].find.Equals(""))
                 {
-                    _resStr = _rules[_ruleIdx]._replaceWith + _resStr;
-                    swapProc = true;
+                    resStr = rules[ruleIdx].replaceWith + resStr;
+                    needSwap = true;
                 }
-                else if (_resStr.Contains(_rules[_ruleIdx]._find))
+                else if (resStr.Contains(rules[ruleIdx].find))
                 {
-                    _resStr = ReplaceFirst(
-                        _resStr,
-                        _rules[_ruleIdx]._find,
-                        _rules[_ruleIdx]._replaceWith
+                    resStr = ReplaceFirst(
+                        resStr,
+                        rules[ruleIdx].find,
+                        rules[ruleIdx].replaceWith
                         );
-                    swapProc = true;
+                    needSwap = true;
                 }
-                if (swapProc)
+                if (needSwap)
                 {
                     if (IsStepByStep) { Console.ReadKey(true); }
-                    swapProc = false;
+                    needSwap = false;
                     iterationsMarkov++;
-                    Console.WriteLine("{0, -5}{1, -5}   {2}", iterationsMarkov, _resStr, _rules[_ruleIdx].ToString());
-                    if (_rules[_ruleIdx]._finishRule) return;
-                    _ruleIdx = 0;
+                    Console.WriteLine("{0, -5}{1, -5}   {2}", iterationsMarkov, resStr, rules[ruleIdx].ToString());
+                    if (rules[ruleIdx].finishRule) return;
+                    ruleIdx = 0;
                     continue;
                 }
-                else _ruleIdx++;
+                else ruleIdx++;
             }//for
         }//start
         //-------------------------------------------------------------
@@ -133,6 +142,7 @@ namespace NormalMarkovAlgorithms
 
             Start();
         }
+        //-----------------------------------------------------------
         internal static string ReplaceFirst(string text, string search, string replace)
         {
             int pos = text.IndexOf(search);
@@ -146,25 +156,19 @@ namespace NormalMarkovAlgorithms
     }//c
     class OneRule
     {
-        internal string _find;
-        internal string _replaceWith;
-        internal bool _finishRule;
+        internal string find;
+        internal string replaceWith;
+        internal bool finishRule;
 
         internal OneRule(string find, string replaceWith, bool finishRule = false)
         {
-            _find = find;
-            _replaceWith = replaceWith;
-            _finishRule = finishRule;
+            this.find = find;
+            this.replaceWith = replaceWith;
+            this.finishRule = finishRule;
         }
-        /*internal OneRule(string find, string replaceWith)
-        {
-            _find = find;
-            _replaceWith = replaceWith;
-            _finishRule = false;
-        }*/
         public override string ToString()
         {
-            return $"({_find} -> {_replaceWith})";
+            return $"({find} -> {replaceWith})";
         }
     }//c
 }//n
