@@ -8,7 +8,11 @@ namespace NormalMarkovAlgorithms
         private static int iterLimit = 100;
         internal static int IterLimit
         {
-            set { if (value > 0 && value < int.MaxValue) iterLimit = value; }
+            set
+            {
+                if (value > 0 && value < int.MaxValue) iterLimit = value;
+                else throw new Exception("value > 0 && value < int.MaxValue");
+            }
             get { return iterLimit; }
         }
         //--------------------------------------------
